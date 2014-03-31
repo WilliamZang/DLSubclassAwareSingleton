@@ -8,21 +8,22 @@
 
 #import "NSObject+DLSubclassAwareSingleton.h"
 
-#import <objc/runtime.h>
-
-void * const DLSubclassAwareSingletonSharedInstanceKey = (void * const)&DLSubclassAwareSingletonSharedInstanceKey;
-
 @implementation NSObject (DLSubclassAwareSingleton)
 
 + (instancetype)sharedInstance_dl {
 	// Allows subclasses to have their very own singleton instance
 	// accessed thru the very same generic singleton method.
-	id sharedInstance;
+	static NSMutableDictionary *instancesByClass = nil;
+	static dispatch_once_t onceToken;
+	dispatch_once(&onceToken, ^{
+		instancesByClass = [NSMutableDictionary dictionary];
+	});
+	id sharedInstance = nil;
 	@synchronized(self) {
-		sharedInstance = objc_getAssociatedObject([self class], DLSubclassAwareSingletonSharedInstanceKey);
+		sharedInstance = instancesByClass[(id<NSCopying>)self];
 		if (!sharedInstance) {
 			sharedInstance = [[self alloc] init];
-			objc_setAssociatedObject([self class], DLSubclassAwareSingletonSharedInstanceKey, sharedInstance, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+			instancesByClass[(id<NSCopying>)self] = sharedInstance;
 		}
 	}
 	return sharedInstance;
