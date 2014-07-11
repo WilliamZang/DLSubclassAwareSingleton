@@ -16,7 +16,7 @@
 	static NSMutableDictionary *instancesByClass = nil;
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken, ^{
-		instancesByClass = [NSMutableDictionary dictionary];
+		instancesByClass = [[NSMutableDictionary alloc] init];
 	});
 	id sharedInstance = nil;
 	@synchronized(self) {
